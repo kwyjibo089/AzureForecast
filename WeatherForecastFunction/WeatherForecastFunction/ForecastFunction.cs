@@ -3,8 +3,9 @@ using Microsoft.Azure.WebJobs.Host;
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Drawing;
 using System.Net;
-using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using WeatherForecastFunction.Utils;
 
@@ -13,49 +14,54 @@ namespace WeatherForecastFunction
     public static class ForecastFunction
     {
         [FunctionName("Function1")]
-        public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log)
+        public static async Task Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, TraceWriter log)
         {
             log.Info($"C# Timer trigger function executed at: {DateTime.Now}");
 
+            var forecastClient = new WeatherClient();
+            if (await forecastClient.WillItRainAsync())
+            {
+                Rainbow(5000);
+                SetColor(Color.Blue);
+            }
+
+            try
+            {
+                var colorString = ConfigurationManager.AppSettings["DefaultColor"];
+                SetColor(Color.FromName(colorString));
+            }
+            catch (Exception)
+            {
+                SetColor(Color.Red);
+            }
+        }
+
+        private static void SetColor(Color color)
+        {
             using (WebClient client = new WebClient())
             {
                 var function = "color";
-                var uri = string.Format(ConfigurationManager.AppSettings["SparkUri"], function);
-                var baseUrl = new Uri(ConfigurationManager.AppSettings["SparkBaseUrl"]);
+                byte[] response = client.UploadValues(ConfigurationManager.AppSettings["SparkUrl"] + function, new NameValueCollection()
+                   {
+                       { "access_token", ConfigurationManager.AppSettings["access_token"] },
+                       { "parms", $"{color.R}{color.B}{color.G}" }
+                   });
+            }
+        }
 
-                byte[] response = client.UploadValues(baseUrl + uri, new NameValueCollection()
-                {
-                    { "access_token", "6ee01ca181ed80a6ba832b4efba366bb7f0d92f6" },
-                    { "parms", "000255000" }
-                });
+        private static void Rainbow(int delay)
+        {
+            using (WebClient client = new WebClient())
+            {
+                var function = "rainbow";
+                byte[] response = client.UploadValues(ConfigurationManager.AppSettings["SparkUrl"] + function, new NameValueCollection()
+                   {
+                       { "access_token", ConfigurationManager.AppSettings["access_token"] },
+                       { "parms", "1" }
+                   });
             }
 
-            //using (var client = new HttpClient())
-            //{
-            //    var function = "color";
-            //    var uri = string.Format(ConfigurationManager.AppSettings["SparkUri"], function);
-            //    var baseUrl = new Uri(ConfigurationManager.AppSettings["SparkBaseUrl"]);
-
-
-            //    log.Info(resultContent);
-            //}
-
-            //var forecastClient = new WeatherClient();
-            //if (await forecastClient.WillItRainAsync())
-            //{
-            //    using (var client = new HttpClient())
-            //    {
-            //        var function = "color";
-            //        var uri = string.Format(ConfigurationManager.AppSettings["SparkUri"], function);
-            //        client.BaseAddress = new Uri(ConfigurationManager.AppSettings["SparkBaseUrl"]);
-            //        var body = new { EntityState = new { @params = "000000255" } };
-
-            //        var result = await client.PostAsJsonAsync(uri, body);
-            //        string resultContent = await result.Content.ReadAsStringAsync();
-
-            //        log.Info(resultContent);
-            //    }
-            //}
+            Thread.Sleep(delay);
         }
     }
 }
