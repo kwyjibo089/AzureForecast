@@ -24,15 +24,17 @@ namespace WeatherForecastFunction
                 Rainbow(5000);
                 SetColor(Color.Blue);
             }
-
-            try
+            else
             {
-                var colorString = ConfigurationManager.AppSettings["DefaultColor"];
-                SetColor(Color.FromName(colorString));
-            }
-            catch (Exception)
-            {
-                SetColor(Color.Red);
+                try
+                {
+                    var colorString = ConfigurationManager.AppSettings["DefaultColor"];
+                    SetColor(Color.FromName(colorString));
+                }
+                catch (Exception)
+                {
+                    SetColor(Color.Red);
+                }
             }
         }
 
