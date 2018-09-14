@@ -1,6 +1,6 @@
 ﻿namespace WeatherForecastFunction.Utils
 {
-    public enum MoodLightFunction
+    public enum MoodLightMode
     {
         color,
         rainbow
