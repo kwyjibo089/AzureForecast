@@ -1,6 +1,5 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 using System;
-using System.Drawing;
 
 namespace WeatherForecastFunction.Utils
 {
@@ -20,7 +19,7 @@ namespace WeatherForecastFunction.Utils
         }
 
         public String Id { get; set; }
-        public Color Color { get; set; }
+        public String Color { get; set; }
         public bool WillItRain { get; set; }
         private DateTime TimeStamp { get; set; }
         public string Message { get; set; }

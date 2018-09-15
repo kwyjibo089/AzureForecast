@@ -13,7 +13,7 @@ namespace WeatherForecastFunction
     public static class ForecastFunction
     {
         [FunctionName("Function1")]
-        public static async Task Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, TraceWriter log)
+        public static async Task Run([TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, TraceWriter log)
         {
             log.Info($"C# Timer trigger function executed at: {DateTime.Now}");
             
@@ -35,9 +35,10 @@ namespace WeatherForecastFunction
                 if (lastLog != null && lastLog.WillItRain == willItRain)
                 {
                     logEntry.Message = "No change detected";
+                    logEntry.Color = lastLog.Color ?? ConfigurationManager.AppSettings["DefaultColor"];
                     TableOperation update = TableOperation.InsertOrReplace(logEntry);
                     table.Execute(update);
-
+                    MoodLight.SetColor(Color.FromName(logEntry.Color));
                     return;
                 }
 
@@ -47,7 +48,7 @@ namespace WeatherForecastFunction
                     MoodLight.Rainbow(5000);
                     MoodLight.SetColor(Color.Blue);
 
-                    logEntry.Color = Color.Blue;
+                    logEntry.Color = Color.Blue.ToString();
                     logEntry.WillItRain = true;
                 }
                 else
@@ -57,12 +58,12 @@ namespace WeatherForecastFunction
                         var colorString = ConfigurationManager.AppSettings["DefaultColor"];
                         MoodLight.Rainbow(5000);
                         MoodLight.SetColor(Color.FromName(colorString));
-                        logEntry.Color = Color.FromName(colorString);
+                        logEntry.Color = colorString;
                     }
                     catch (Exception e)
                     {
                         MoodLight.SetColor(Color.Red);
-                        logEntry.Color = Color.Red;
+                        logEntry.Color = Color.Red.ToString();
                         logEntry.Message = e.Message;
                     }
                     finally
