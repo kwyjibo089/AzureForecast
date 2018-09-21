@@ -13,7 +13,7 @@ namespace WeatherForecastFunction
     public static class ForecastFunction
     {
         [FunctionName("Function1")]
-        public static async Task Run([TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, TraceWriter log)
+        public static async Task Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, TraceWriter log)
         {
             log.Info($"C# Timer trigger function executed at: {DateTime.Now}");
             
@@ -48,7 +48,7 @@ namespace WeatherForecastFunction
                     MoodLight.Rainbow(5000);
                     MoodLight.SetColor(Color.Blue);
 
-                    logEntry.Color = Color.Blue.ToString();
+                    logEntry.Color = Color.Blue.Name;
                     logEntry.WillItRain = true;
                 }
                 else
@@ -63,7 +63,7 @@ namespace WeatherForecastFunction
                     catch (Exception e)
                     {
                         MoodLight.SetColor(Color.Red);
-                        logEntry.Color = Color.Red.ToString();
+                        logEntry.Color = Color.Red.Name;
                         logEntry.Message = e.Message;
                     }
                     finally
