@@ -16,7 +16,7 @@ namespace WeatherForecastFunction
         public static async Task Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, TraceWriter log)
         {
             log.Info($"C# Timer trigger function executed at: {DateTime.Now}");
-            
+
             try
             {
                 CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
@@ -31,9 +31,11 @@ namespace WeatherForecastFunction
                 var willItRain = await forecastClient.WillItRainAsync();
 
                 var logEntry = new LogEntry(ConfigurationManager.AppSettings["WeatherSettingId"]);
-                
-                if (lastLog != null && lastLog.WillItRain == willItRain)
+
+                if (lastLog != null && lastLog.WillItRain == willItRain &&
+                    lastLog.Color != (willItRain ? ConfigurationManager.AppSettings["DefaultColor"] : Color.Blue.Name))
                 {
+                    logEntry.WillItRain = willItRain;
                     logEntry.Message = "No change detected";
                     logEntry.Color = lastLog.Color ?? ConfigurationManager.AppSettings["DefaultColor"];
                     TableOperation update = TableOperation.InsertOrReplace(logEntry);
@@ -77,7 +79,7 @@ namespace WeatherForecastFunction
             }
             catch (Exception e)
             {
-                log.Error("Exception occured",  e);                
+                log.Error("Exception occured", e);
             }
         }
     }
